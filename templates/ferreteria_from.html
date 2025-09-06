@@ -1,0 +1,420 @@
+{% extends "ferreteria_base.html" %}
+
+{% block title %}{% if product %}Editar{% else %}Nuevo{% endif %} Producto - Ferretería El Martillo{% endblock %}
+
+{% block content %}
+<div class="form-page">
+    <div class="page-header">
+        <h2>
+            <i class="fas fa-{% if product %}edit{% else %}plus-circle{% endif %}"></i>
+            {% if product %}Editar Producto{% else %}Nuevo Producto{% endif %}
+        </h2>
+        <p>{% if product %}Modifica los datos del producto{% else %}Registra un nuevo artículo en el inventario{% endif %}</p>
+    </div>
+
+    <div class="form-container">
+        <form method="POST" class="ferreteria-form">
+            <div class="form-sections">
+                <!-- Información básica del producto -->
+                <div class="form-section">
+                    <h3><i class="fas fa-info-circle"></i> Información Básica</h3>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="codigo" class="form-label">
+                                <i class="fas fa-barcode"></i>
+                                Código de Producto
+                            </label>
+                            <input type="text" 
+                                   id="codigo" 
+                                   name="codigo" 
+                                   class="form-input" 
+                                   value="{{ product.codigo if product else '' }}" 
+                                   placeholder="Ej: HER-001, ELEC-025">
+                            <small class="form-help">Código único para identificación rápida</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="nombre" class="form-label">
+                                <i class="fas fa-tag"></i>
+                                Nombre del Producto *
+                            </label>
+                            <input type="text" 
+                                   id="nombre" 
+                                   name="nombre" 
+                                   class="form-input" 
+                                   value="{{ product.nombre if product else '' }}" 
+                                   required 
+                                   maxlength="150"
+                                   placeholder="Ej: Martillo de Garra 16oz">
+                            <small class="form-help">Nombre descriptivo del producto</small>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="descripcion" class="form-label">
+                            <i class="fas fa-align-left"></i>
+                            Descripción Detallada
+                        </label>
+                        <textarea id="descripcion" 
+                                  name="descripcion" 
+                                  class="form-textarea" 
+                                  rows="3" 
+                                  maxlength="500"
+                                  placeholder="Descripción técnica, características, materiales, etc.">{{ product.descripcion if product else '' }}</textarea>
+                        <small class="form-help">Detalles técnicos y características del producto</small>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="marca" class="form-label">
+                                <i class="fas fa-copyright"></i>
+                                Marca
+                            </label>
+                            <input type="text" 
+                                   id="marca" 
+                                   name="marca" 
+                                   class="form-input" 
+                                   value="{{ product.marca if product else '' }}" 
+                                   maxlength="50"
+                                   placeholder="Ej: Stanley, Bosch, DeWalt"
+                                   list="marcas">
+                            <datalist id="marcas">
+                                {% for brand in brands %}
+                                <option value="{{ brand }}">
+                                {% endfor %}
+                            </datalist>
+                            <small class="form-help">Marca o fabricante del producto</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="unidad_medida" class="form-label">
+                                <i class="fas fa-ruler"></i>
+                                Unidad de Medida
+                            </label>
+                            <select id="unidad_medida" name="unidad_medida" class="form-select">
+                                <option value="unidad" {% if not product or product.unidad_medida == 'unidad' %}selected{% endif %}>Unidad</option>
+                                <option value="metro" {% if product and product.unidad_medida == 'metro' %}selected{% endif %}>Metro</option>
+                                <option value="kilogramo" {% if product and product.unidad_medida == 'kilogramo' %}selected{% endif %}>Kilogramo</option>
+                                <option value="litro" {% if product and product.unidad_medida == 'litro' %}selected{% endif %}>Litro</option>
+                                <option value="caja" {% if product and product.unidad_medida == 'caja' %}selected{% endif %}>Caja</option>
+                                <option value="paquete" {% if product and product.unidad_medida == 'paquete' %}selected{% endif %}>Paquete</option>
+                                <option value="rollo" {% if product and product.unidad_medida == 'rollo' %}selected{% endif %}>Rollo</option>
+                                <option value="galón" {% if product and product.unidad_medida == 'galón' %}selected{% endif %}>Galón</option>
+                            </select>
+                            <small class="form-help">Cómo se mide o vende el producto</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Categorización -->
+                <div class="form-section">
+                    <h3><i class="fas fa-tags"></i> Categorización</h3>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="categoria" class="form-label">
+                                <i class="fas fa-folder"></i>
+                                Categoría Principal *
+                            </label>
+                            <input type="text" 
+                                   id="categoria" 
+                                   name="categoria" 
+                                   class="form-input" 
+                                   value="{{ product.categoria if product else '' }}" 
+                                   required 
+                                   maxlength="50"
+                                   placeholder="Ej: Herramientas, Electricidad, Plomería"
+                                   list="categorias">
+                            <datalist id="categorias">
+                                {% for cat in categories %}
+                                <option value="{{ cat }}">
+                                {% endfor %}
+                                <option value="Herramientas Manuales">
+                                <option value="Herramientas Eléctricas">
+                                <option value="Electricidad">
+                                <option value="Plomería">
+                                <option value="Pinturas y Acabados">
+                                <option value="Ferretería General">
+                                <option value="Construcción">
+                                <option value="Jardín y Exterior">
+                                <option value="Seguridad">
+                                <option value="Adhesivos y Químicos">
+                            </datalist>
+                            <small class="form-help">Categoría principal del departamento</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="subcategoria" class="form-label">
+                                <i class="fas fa-sitemap"></i>
+                                Subcategoría
+                            </label>
+                            <input type="text" 
+                                   id="subcategoria" 
+                                   name="subcategoria" 
+                                   class="form-input" 
+                                   value="{{ product.subcategoria if product else '' }}" 
+                                   maxlength="50"
+                                   placeholder="Ej: Martillos, Destornilladores, Cables">
+                            <small class="form-help">Subcategoría específica (opcional)</small>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="ubicacion" class="form-label">
+                                <i class="fas fa-map-marker-alt"></i>
+                                Ubicación en Tienda
+                            </label>
+                            <input type="text" 
+                                   id="ubicacion" 
+                                   name="ubicacion" 
+                                   class="form-input" 
+                                   value="{{ product.ubicacion if product else '' }}" 
+                                   maxlength="50"
+                                   placeholder="Ej: Pasillo 3, Estante A2, Bodega">
+                            <small class="form-help">Dónde se encuentra físicamente el producto</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="proveedor" class="form-label">
+                                <i class="fas fa-truck"></i>
+                                Proveedor
+                            </label>
+                            <input type="text" 
+                                   id="proveedor" 
+                                   name="proveedor" 
+                                   class="form-input" 
+                                   value="{{ product.proveedor if product else '' }}" 
+                                   maxlength="100"
+                                   placeholder="Ej: Distribuidora Central, Importadora XYZ">
+                            <small class="form-help">Empresa o persona que suministra el producto</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Inventario y precios -->
+                <div class="form-section">
+                    <h3><i class="fas fa-calculator"></i> Inventario y Precios</h3>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="cantidad" class="form-label">
+                                <i class="fas fa-boxes"></i>
+                                Cantidad en Stock *
+                            </label>
+                            <input type="number" 
+                                   id="cantidad" 
+                                   name="cantidad" 
+                                   class="form-input" 
+                                   value="{{ product.cantidad if product else 0 }}" 
+                                   min="0" 
+                                   max="999999"
+                                   required>
+                            <small class="form-help">Cantidad disponible actualmente</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="stock_minimo" class="form-label">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                Stock Mínimo
+                            </label>
+                            <input type="number" 
+                                   id="stock_minimo" 
+                                   name="stock_minimo" 
+                                   class="form-input" 
+                                   value="{{ product.stock_minimo if product else 5 }}" 
+                                   min="0" 
+                                   max="999">
+                            <small class="form-help">Cantidad mínima antes de alertas</small>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="precio_compra" class="form-label">
+                                <i class="fas fa-dollar-sign"></i>
+                                Precio de Compra *
+                            </label>
+                            <input type="number" 
+                                   id="precio_compra" 
+                                   name="precio_compra" 
+                                   class="form-input" 
+                                   value="{{ product.precio_compra if product else '' }}" 
+                                   min="0" 
+                                   step="0.01"
+                                   required
+                                   placeholder="0.00">
+                            <small class="form-help">Costo de adquisición por unidad</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="precio_venta" class="form-label">
+                                <i class="fas fa-money-bill-wave"></i>
+                                Precio de Venta *
+                            </label>
+                            <input type="number" 
+                                   id="precio_venta" 
+                                   name="precio_venta" 
+                                   class="form-input" 
+                                   value="{{ product.precio_venta if product else '' }}" 
+                                   min="0" 
+                                   step="0.01"
+                                   required
+                                   placeholder="0.00">
+                            <small class="form-help">Precio de venta al público</small>
+                        </div>
+                    </div>
+
+                    <!-- Cálculos automáticos -->
+                    <div class="calculations-panel">
+                        <div class="calc-item">
+                            <span class="calc-label">Margen de Ganancia:</span>
+                            <span class="calc-value" id="profit-margin">0%</span>
+                        </div>
+                        <div class="calc-item">
+                            <span class="calc-label">Ganancia por Unidad:</span>
+                            <span class="calc-value" id="profit-per-unit">$0.00</span>
+                        </div>
+                        <div class="calc-item">
+                            <span class="calc-label">Valor Total en Stock:</span>
+                            <span class="calc-value" id="total-stock-value">$0.00</span>
+                        </div>
+                        <div class="calc-item">
+                            <span class="calc-label">Ganancia Potencial Total:</span>
+                            <span class="calc-value" id="total-potential-profit">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botones de acción -->
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i>
+                    {% if product %}Actualizar Producto{% else %}Crear Producto{% endif %}
+                </button>
+                <a href="{{ url_for('inventario') }}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i>
+                    Cancelar
+                </a>
+                {% if product %}
+                <button type="button" 
+                        onclick="deleteProduct({{ product.id }}, '{{ product.nombre }}')" 
+                        class="btn btn-danger">
+                    <i class="fas fa-trash"></i>
+                    Eliminar
+                </button>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if product %}
+<!-- Modal de confirmación para eliminar -->
+<div id="deleteModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Confirmar Eliminación</h3>
+            <button class="modal-close" onclick="closeDeleteModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="warning-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <p>¿Estás seguro de que deseas eliminar el producto <strong>{{ product.nombre }}</strong>?</p>
+            <div class="warning-details">
+                <ul>
+                    <li>Se perderá toda la información del producto</li>
+                    <li>Esta acción no se puede deshacer</li>
+                    <li>Stock actual: {{ product.cantidad }} {{ product.unidad_medida }}</li>
+                    <li>Valor en inventario: {{ (product.cantidad * product.precio_compra) | currency }}</li>
+                </ul>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeDeleteModal()">Cancelar</button>
+            <form method="POST" action="{{ url_for('eliminar_producto', product_id=product.id) }}" style="display: inline;">
+                <button type="submit" class="btn btn-danger">
+                    <i class="fas fa-trash"></i>
+                    Eliminar Definitivamente
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<script>
+// Cálculos automáticos
+function updateCalculations() {
+    const cantidad = parseFloat(document.getElementById('cantidad').value) || 0;
+    const precioCompra = parseFloat(document.getElementById('precio_compra').value) || 0;
+    const precioVenta = parseFloat(document.getElementById('precio_venta').value) || 0;
+    
+    const gananciaPorUnidad = precioVenta - precioCompra;
+    const margenGanancia = precioCompra > 0 ? ((gananciaPorUnidad / precioCompra) * 100) : 0;
+    const valorTotalStock = cantidad * precioVenta;
+    const gananciaPotencialTotal = cantidad * gananciaPorUnidad;
+    
+    document.getElementById('profit-margin').textContent = margenGanancia.toFixed(1) + '%';
+    document.getElementById('profit-per-unit').textContent = '$' + gananciaPorUnidad.toFixed(2);
+    document.getElementById('total-stock-value').textContent = '$' + valorTotalStock.toLocaleString('en-US', {minimumFractionDigits: 2});
+    document.getElementById('total-potential-profit').textContent = '$' + gananciaPotencialTotal.toLocaleString('en-US', {minimumFractionDigits: 2});
+    
+    // Cambiar color según el margen
+    const marginElement = document.getElementById('profit-margin');
+    if (margenGanancia < 10) {
+        marginElement.style.color = '#e74c3c';
+    } else if (margenGanancia < 25) {
+        marginElement.style.color = '#f39c12';
+    } else {
+        marginElement.style.color = '#27ae60';
+    }
+}
+
+// Event listeners para cálculos automáticos
+document.getElementById('cantidad').addEventListener('input', updateCalculations);
+document.getElementById('precio_compra').addEventListener('input', updateCalculations);
+document.getElementById('precio_venta').addEventListener('input', updateCalculations);
+
+// Inicializar cálculos
+document.addEventListener('DOMContentLoaded', updateCalculations);
+
+// Funciones del modal
+function deleteProduct(productId, productName) {
+    document.getElementById('deleteModal').style.display = 'block';
+}
+
+function closeDeleteModal() {
+    document.getElementById('deleteModal').style.display = 'none';
+}
+
+// Cerrar modal con Escape o clic fuera
+window.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeDeleteModal();
+    }
+});
+
+window.onclick = function(event) {
+    const modal = document.getElementById('deleteModal');
+    if (event.target == modal) {
+        closeDeleteModal();
+    }
+}
+
+// Generar código automático basado en categoría
+document.getElementById('categoria').addEventListener('blur', function() {
+    const codigoInput = document.getElementById('codigo');
+    if (!codigoInput.value && this.value) {
+        const categoria = this.value.toUpperCase().substring(0, 3);
+        const timestamp = Date.now().toString().slice(-4);
+        codigoInput.value = `${categoria}-${timestamp}`;
+    }
+});
+</script>
+{% endblock %}
