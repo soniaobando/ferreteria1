@@ -1,0 +1,46 @@
+codigo,nombre,descripcion,marca,cantidad,precio_compra,precio_venta,categoria,subcategoria,ubicacion,proveedor,stock_minimo,unidad_medida
+HER001,Martillo de uña 16oz,Martillo con mango de fibra de vidrio,Stanley,25,12.50,18.75,Herramientas,Martillos,A-01,Distribuidora Central,5,unidad
+HER002,Destornillador Phillips #2,Destornillador punta Phillips con mango ergonómico,Klein Tools,40,3.20,5.50,Herramientas,Destornilladores,A-02,Herramientas del Norte,10,unidad
+HER003,Alicate universal 8",Alicate universal con mango antideslizante,Bahco,18,8.75,14.25,Herramientas,Alicates,A-03,Distribuidora Central,8,unidad
+HER004,Llave inglesa 10",Llave inglesa ajustable cromada,Truper,22,11.30,17.90,Herramientas,Llaves,A-04,Truper Distribución,6,unidad
+HER005,Taladro eléctrico 1/2",Taladro percutor con cable 650W,Black & Decker,8,45.00,72.00,Herramientas,Taladros,A-05,Electrotools,3,unidad
+TOR001,Tornillos autoperforantes 1",Tornillos punta broca cabeza phillips,Phillips,500,0.08,0.15,Tornillería,Autoperforantes,B-01,Tornillos SA,50,unidad
+TOR002,Tornillos madera 2" x 8,Tornillos para madera cabeza plana,Nacional,300,0.12,0.22,Tornillería,Madera,B-02,Fijaciones Modernas,40,unidad
+TOR003,Tuercas hexagonales 1/4",Tuercas hexagonales galvanizadas,Acero Plus,250,0.05,0.12,Tornillería,Tuercas,B-03,Metales Unidos,30,unidad
+TOR004,Arandelas planas 1/4",Arandelas planas galvanizadas,Acero Plus,400,0.03,0.08,Tornillería,Arandelas,B-04,Metales Unidos,50,unidad
+TOR005,Pernos hexagonales 1/4" x 2",Pernos hexagonales galvanizados,Industrial,180,0.18,0.32,Tornillería,Pernos,B-05,Fijaciones Modernas,25,unidad
+PIN001,Pintura látex blanco 1 galón,Pintura látex lavable interior/exterior,Sherwin Williams,15,18.50,28.90,Pinturas,Látex,C-01,Pinturas Colorex,5,galón
+PIN002,Esmalte sintético rojo 1 cuarto,Esmalte sintético brillante para metal,Comex,24,8.75,14.20,Pinturas,Esmalte,C-02,Pinturas del Centro,8,cuarto
+PIN003,Thinner estándar 1 litro,Diluyente para pinturas y esmaltes,Quimicos,35,2.80,4.50,Pinturas,Diluyentes,C-03,Químicos Industriales,12,litro
+PIN004,Brocha 2" pelo natural,Brocha para pintura con mango de madera,Pincel Pro,20,4.20,7.80,Pinturas,Brochas,C-04,Accesorios Paint,10,unidad
+PIN005,Rodillo lana 9",Rodillo con lana natural para látex,Rodillos Max,16,3.50,6.25,Pinturas,Rodillos,C-05,Accesorios Paint,8,unidad
+ELE001,Cable THW #12 AWG,Cable cobre sólido 600V,Condumex,500,1.20,2.10,Electricidad,Cables,D-01,Eléctricos Modernos,50,metro
+ELE002,Interruptor sencillo blanco,Interruptor 15A 125V color blanco,Leviton,45,2.80,4.90,Electricidad,Interruptores,D-02,Conexiones SA,15,unidad
+ELE003,Tomacorriente doble blanco,Tomacorriente 15A 125V polarizado,Leviton,38,3.50,6.20,Electricidad,Tomacorrientes,D-03,Conexiones SA,12,unidad
+ELE004,Tubo conduit 1/2" x 3m,Tubo conduit PVC eléctrico,Tigre,60,4.80,8.40,Electricidad,Conduit,D-04,Tuberías Eléctricas,20,pieza
+ELE005,Caja rectangular metal,Caja para interruptor metálica,Hubbell,28,1.90,3.45,Electricidad,Cajas,D-05,Conexiones SA,15,unidad
+PLO001,Tubería PVC 1/2" x 6m,Tubería presión 315 PSI,Pavco,25,8.90,15.60,Plomería,Tuberías,E-01,Tuberías Hidráulicas,8,pieza
+PLO002,Codo PVC 1/2" 90°,Codo presión 90 grados,Pavco,80,0.65,1.25,Plomería,Conexiones,E-02,Tuberías Hidráulicas,25,unidad
+PLO003,Llave de paso 1/2",Llave esférica bronce,Foset,12,8.50,15.80,Plomería,Llaves,E-03,Válvulas Técnicas,6,unidad
+PLO004,Pegamento PVC 125ml,Cemento solvente para PVC,Tangit,18,3.20,5.90,Plomería,Pegamentos,E-04,Químicos Hidráulicos,8,unidad
+PLO005,Cinta teflón 1/2" x 10m,Cinta sellante para roscas,Surtek,50,0.80,1.50,Plomería,Sellantes,E-05,Tuberías Hidráulicas,20,rollo
+FER001,Cadena galvanizada 1/4",Cadena eslabón corto galvanizada,Nacional,100,2.40,4.20,Ferretería,Cadenas,F-01,Metales y Cadenas,15,metro
+FER002,Candado 40mm latón,Candado de seguridad con 2 llaves,Master Lock,30,6.80,12.50,Ferretería,Candados,F-02,Seguridad Total,10,unidad
+FER003,Bisagra 3" acero,Bisagra para puerta con pernos,Nacional,25,2.90,5.40,Ferretería,Bisagras,F-03,Herrajes Modernos,8,par
+FER004,Alambre galvanizado #18,Alambre galvanizado calibre 18,Deacero,5,12.50,22.80,Ferretería,Alambre,F-04,Metales Unidos,2,kilo
+FER005,Clavos 3" cabeza grande,Clavos de acero para construcción,Clavos SA,15,8.90,15.60,Ferretería,Clavos,F-05,Clavos y Fijaciones,5,kilo
+CON001,Cemento gris 50kg,Cemento Portland tipo I,Cruz Azul,80,6.20,9.80,Construcción,Cemento,G-01,Materiales de Construcción,20,saco
+CON002,Arena fina,Arena cernida para construcción,Local,15,8.00,14.50,Construcción,Agregados,G-02,Agregados del Valle,5,metro cúbico
+CON003,Grava 3/4",Grava para concreto,Local,12,15.00,25.80,Construcción,Agregados,G-03,Agregados del Valle,3,metro cúbico
+CON004,Block 15x20x40,Block de concreto hueco,Bloques Unidos,200,1.80,2.95,Construcción,Block,G-04,Bloques y Tabiques,50,pieza
+CON005,Varilla 3/8" x 12m,Varilla corrugada grado 42,Deacero,45,18.50,32.40,Construcción,Varilla,G-05,Aceros de Construcción,15,pieza
+JAR001,Pala recta mango largo,Pala para jardinería con mango de madera,Truper,12,15.80,26.90,Jardinería,Palas,H-01,Herramientas Jardín,5,unidad
+JAR002,Rastrillo 14 dientes,Rastrillo metálico para jardín,Truper,8,12.40,21.50,Jardinería,Rastrillos,H-02,Herramientas Jardín,3,unidad
+JAR003,Manguera 1/2" x 15m,Manguera reforzada para jardín,Plastigoma,20,18.90,32.60,Jardinería,Mangueras,H-03,Riego Técnico,8,pieza
+JAR004,Fertilizante NPK 1kg,Fertilizante complejo 15-15-15,Fertimex,35,4.50,8.20,Jardinería,Fertilizantes,H-04,Agro Suministros,12,kilo
+JAR005,Maceta barro 20cm,Maceta de barro natural,Artesanías,45,2.80,5.50,Jardinería,Macetas,H-05,Vivero Central,15,unidad
+SEG001,Casco de seguridad blanco,Casco industrial con barbiquejo,3M,15,8.90,16.80,Seguridad,Protección Cabeza,I-01,Equipos de Seguridad,6,unidad
+SEG002,Guantes de carnaza,Guantes reforzados para trabajo,Ansell,25,3.40,6.90,Seguridad,Protección Manos,I-02,Equipos de Seguridad,10,par
+SEG003,Lentes de seguridad,Lentes policarbonato anti-empañe,Uvex,20,4.60,8.50,Seguridad,Protección Visual,I-03,Equipos de Seguridad,8,unidad
+SEG004,Chaleco reflectante,Chaleco alta visibilidad naranja,Safety First,18,6.80,12.90,Seguridad,Ropa Seguridad,I-04,Equipos de Seguridad,6,unidad
+SEG005,Extintor PQS 4.5kg,Extintor polvo químico seco,Amerex,6,32.50,58.90,Seguridad,Extintores,I-05,Sistemas Contra Incendio,2,unidad

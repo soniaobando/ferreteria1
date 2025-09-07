@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 import sqlite3
 import os
+import json
+import csv
 from datetime import datetime
 
 app = Flask(__name__)
@@ -8,6 +10,7 @@ app.secret_key = 'ferreteria_inventario_2024_seguro'
 
 # Configuración de la base de datos
 DATABASE = 'ferreteria_inventario.db'
+DATOS_FOLDER = 'datos'
 
 def init_db():
     """Inicializa la base de datos con las tablas necesarias para ferretería"""
@@ -67,6 +70,21 @@ def product_exists_by_name(name, exclude_id=None):
             result = conn.execute('''
                 SELECT id FROM productos WHERE LOWER(nombre) = LOWER(?)
             ''', (name,)).fetchone()
+    return result is not None
+
+def product_exists_by_code(code, exclude_id=None):
+    """Verifica si existe un producto con el mismo código"""
+    if not code:
+        return False
+    with get_db_connection() as conn:
+        if exclude_id:
+            result = conn.execute('''
+                SELECT id FROM productos WHERE LOWER(codigo) = LOWER(?) AND id != ?
+            ''', (code, exclude_id)).fetchone()
+        else:
+            result = conn.execute('''
+                SELECT id FROM productos WHERE LOWER(codigo) = LOWER(?)
+            ''', (code,)).fetchone()
     return result is not None
 
 def search_products(term, search_type='nombre'):
@@ -145,6 +163,236 @@ def get_stats():
         'total_units': total_units if total_units else 0
     }
 
+def import_from_csv(filepath):
+    """Importa productos desde archivo CSV"""
+    imported = 0
+    errors = []
+    
+    try:
+        with open(filepath, 'r', encoding='utf-8') as csvfile:
+            reader = csv.DictReader(csvfile)
+            
+            with get_db_connection() as conn:
+                for row_num, row in enumerate(reader, start=2):
+                    try:
+                        # Limpiar y validar datos
+                        codigo = row.get('codigo', '').strip()
+                        nombre = row.get('nombre', '').strip()
+                        
+                        if not nombre:
+                            errors.append(f"Fila {row_num}: El nombre es obligatorio")
+                            continue
+                        
+                        # Verificar si ya existe
+                        if product_exists_by_name(nombre):
+                            errors.append(f"Fila {row_num}: Ya existe producto '{nombre}'")
+                            continue
+                            
+                        if codigo and product_exists_by_code(codigo):
+                            errors.append(f"Fila {row_num}: Ya existe código '{codigo}'")
+                            continue
+                        
+                        # Preparar datos
+                        data = {
+                            'codigo': codigo if codigo else None,
+                            'nombre': nombre,
+                            'descripcion': row.get('descripcion', '').strip(),
+                            'marca': row.get('marca', '').strip(),
+                            'cantidad': int(float(row.get('cantidad', 0))),
+                            'precio_compra': float(row.get('precio_compra', 0)),
+                            'precio_venta': float(row.get('precio_venta', 0)),
+                            'categoria': row.get('categoria', 'General').strip(),
+                            'subcategoria': row.get('subcategoria', '').strip(),
+                            'ubicacion': row.get('ubicacion', '').strip(),
+                            'proveedor': row.get('proveedor', '').strip(),
+                            'stock_minimo': int(float(row.get('stock_minimo', 5))),
+                            'unidad_medida': row.get('unidad_medida', 'unidad').strip()
+                        }
+                        
+                        # Insertar en base de datos
+                        conn.execute('''
+                            INSERT INTO productos (codigo, nombre, descripcion, marca, cantidad, 
+                                                 precio_compra, precio_venta, categoria, subcategoria, 
+                                                 ubicacion, proveedor, stock_minimo, unidad_medida)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        ''', (data['codigo'], data['nombre'], data['descripcion'], data['marca'], 
+                             data['cantidad'], data['precio_compra'], data['precio_venta'], 
+                             data['categoria'], data['subcategoria'], data['ubicacion'], 
+                             data['proveedor'], data['stock_minimo'], data['unidad_medida']))
+                        
+                        imported += 1
+                        
+                    except (ValueError, KeyError) as e:
+                        errors.append(f"Fila {row_num}: Error en datos - {str(e)}")
+                    except Exception as e:
+                        errors.append(f"Fila {row_num}: Error inesperado - {str(e)}")
+                
+                conn.commit()
+                
+    except FileNotFoundError:
+        errors.append("Archivo no encontrado")
+    except Exception as e:
+        errors.append(f"Error al leer archivo: {str(e)}")
+    
+    return imported, errors
+
+def import_from_json(filepath):
+    """Importa productos desde archivo JSON"""
+    imported = 0
+    errors = []
+    
+    try:
+        with open(filepath, 'r', encoding='utf-8') as jsonfile:
+            data = json.load(jsonfile)
+            
+            # Verificar estructura del JSON
+            if 'productos' not in data:
+                errors.append("El archivo JSON debe tener una clave 'productos'")
+                return imported, errors
+            
+            with get_db_connection() as conn:
+                for idx, product in enumerate(data['productos']):
+                    try:
+                        # Validar datos obligatorios
+                        nombre = product.get('nombre', '').strip()
+                        if not nombre:
+                            errors.append(f"Producto {idx + 1}: El nombre es obligatorio")
+                            continue
+                        
+                        # Verificar duplicados
+                        codigo = product.get('codigo', '').strip()
+                        if product_exists_by_name(nombre):
+                            errors.append(f"Producto {idx + 1}: Ya existe '{nombre}'")
+                            continue
+                            
+                        if codigo and product_exists_by_code(codigo):
+                            errors.append(f"Producto {idx + 1}: Ya existe código '{codigo}'")
+                            continue
+                        
+                        # Insertar producto
+                        conn.execute('''
+                            INSERT INTO productos (codigo, nombre, descripcion, marca, cantidad, 
+                                                 precio_compra, precio_venta, categoria, subcategoria, 
+                                                 ubicacion, proveedor, stock_minimo, unidad_medida)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        ''', (
+                            codigo if codigo else None,
+                            nombre,
+                            product.get('descripcion', '').strip(),
+                            product.get('marca', '').strip(),
+                            int(product.get('cantidad', 0)),
+                            float(product.get('precio_compra', 0)),
+                            float(product.get('precio_venta', 0)),
+                            product.get('categoria', 'General').strip(),
+                            product.get('subcategoria', '').strip(),
+                            product.get('ubicacion', '').strip(),
+                            product.get('proveedor', '').strip(),
+                            int(product.get('stock_minimo', 5)),
+                            product.get('unidad_medida', 'unidad').strip()
+                        ))
+                        
+                        imported += 1
+                        
+                    except (ValueError, KeyError) as e:
+                        errors.append(f"Producto {idx + 1}: Error en datos - {str(e)}")
+                    except Exception as e:
+                        errors.append(f"Producto {idx + 1}: Error inesperado - {str(e)}")
+                
+                conn.commit()
+                
+    except FileNotFoundError:
+        errors.append("Archivo no encontrado")
+    except json.JSONDecodeError as e:
+        errors.append(f"Error en formato JSON: {str(e)}")
+    except Exception as e:
+        errors.append(f"Error al leer archivo: {str(e)}")
+    
+    return imported, errors
+
+def import_from_txt(filepath):
+    """Importa productos desde archivo TXT (formato delimitado por |)"""
+    imported = 0
+    errors = []
+    
+    try:
+        with open(filepath, 'r', encoding='utf-8') as txtfile:
+            lines = txtfile.readlines()
+            
+            with get_db_connection() as conn:
+                for line_num, line in enumerate(lines, start=1):
+                    line = line.strip()
+                    
+                    # Saltar líneas vacías y comentarios
+                    if not line or line.startswith('#'):
+                        continue
+                    
+                    try:
+                        # Dividir por el separador |
+                        parts = line.split('|')
+                        
+                        if len(parts) < 13:
+                            errors.append(f"Línea {line_num}: Datos incompletos (se esperan 13 campos)")
+                            continue
+                        
+                        # Extraer datos
+                        codigo, nombre, descripcion, marca, cantidad, precio_compra, precio_venta, \
+                        categoria, subcategoria, ubicacion, proveedor, stock_minimo, unidad_medida = parts[:13]
+                        
+                        # Limpiar datos
+                        codigo = codigo.strip()
+                        nombre = nombre.strip()
+                        
+                        if not nombre:
+                            errors.append(f"Línea {line_num}: El nombre es obligatorio")
+                            continue
+                        
+                        # Verificar duplicados
+                        if product_exists_by_name(nombre):
+                            errors.append(f"Línea {line_num}: Ya existe '{nombre}'")
+                            continue
+                            
+                        if codigo and product_exists_by_code(codigo):
+                            errors.append(f"Línea {line_num}: Ya existe código '{codigo}'")
+                            continue
+                        
+                        # Insertar producto
+                        conn.execute('''
+                            INSERT INTO productos (codigo, nombre, descripcion, marca, cantidad, 
+                                                 precio_compra, precio_venta, categoria, subcategoria, 
+                                                 ubicacion, proveedor, stock_minimo, unidad_medida)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        ''', (
+                            codigo if codigo else None,
+                            nombre,
+                            descripcion.strip(),
+                            marca.strip(),
+                            int(float(cantidad.strip())),
+                            float(precio_compra.strip()),
+                            float(precio_venta.strip()),
+                            categoria.strip(),
+                            subcategoria.strip(),
+                            ubicacion.strip(),
+                            proveedor.strip(),
+                            int(float(stock_minimo.strip())),
+                            unidad_medida.strip()
+                        ))
+                        
+                        imported += 1
+                        
+                    except (ValueError, IndexError) as e:
+                        errors.append(f"Línea {line_num}: Error en formato - {str(e)}")
+                    except Exception as e:
+                        errors.append(f"Línea {line_num}: Error inesperado - {str(e)}")
+                
+                conn.commit()
+                
+    except FileNotFoundError:
+        errors.append("Archivo no encontrado")
+    except Exception as e:
+        errors.append(f"Error al leer archivo: {str(e)}")
+    
+    return imported, errors
+
 # Rutas de la aplicación
 @app.route('/')
 def index():
@@ -167,6 +415,61 @@ def inventario():
                          products=products, 
                          categories=categories,
                          brands=brands)
+
+@app.route('/importar', methods=['GET', 'POST'])
+def importar_datos():
+    """Página para importar datos desde archivos"""
+    if request.method == 'POST':
+        file_type = request.form.get('file_type')
+        
+        if not file_type:
+            flash('Seleccione un tipo de archivo', 'error')
+            return render_template('ferreteria_importar.html')
+        
+        # Construir ruta del archivo
+        if file_type == 'csv':
+            filepath = os.path.join(DATOS_FOLDER, 'datos.csv')
+        elif file_type == 'json':
+            filepath = os.path.join(DATOS_FOLDER, 'datos.json')
+        elif file_type == 'txt':
+            filepath = os.path.join(DATOS_FOLDER, 'datos.txt')
+        else:
+            flash('Tipo de archivo no válido', 'error')
+            return render_template('ferreteria_importar.html')
+        
+        # Verificar que el archivo existe
+        if not os.path.exists(filepath):
+            flash(f'No se encontró el archivo {filepath}', 'error')
+            return render_template('ferreteria_importar.html')
+        
+        # Importar según el tipo
+        try:
+            if file_type == 'csv':
+                imported, errors = import_from_csv(filepath)
+            elif file_type == 'json':
+                imported, errors = import_from_json(filepath)
+            elif file_type == 'txt':
+                imported, errors = import_from_txt(filepath)
+            
+            # Mostrar resultados
+            if imported > 0:
+                flash(f'Se importaron {imported} productos exitosamente', 'success')
+            
+            if errors:
+                for error in errors[:10]:  # Mostrar solo los primeros 10 errores
+                    flash(error, 'warning')
+                if len(errors) > 10:
+                    flash(f'Y {len(errors) - 10} errores más...', 'warning')
+            
+            if imported == 0 and errors:
+                flash('No se pudo importar ningún producto', 'error')
+                
+        except Exception as e:
+            flash(f'Error durante la importación: {str(e)}', 'error')
+        
+        return redirect(url_for('inventario'))
+    
+    return render_template('ferreteria_importar.html')
 
 @app.route('/producto/nuevo', methods=['GET', 'POST'])
 def nuevo_producto():
@@ -200,6 +503,12 @@ def nuevo_producto():
                                      categories=get_categories(), 
                                      brands=get_brands())
             
+            if codigo and product_exists_by_code(codigo):
+                flash('Ya existe un producto con ese código', 'error')
+                return render_template('ferreteria_form.html', 
+                                     categories=get_categories(), 
+                                     brands=get_brands())
+            
             if cantidad < 0:
                 flash('La cantidad no puede ser negativa', 'error')
                 return render_template('ferreteria_form.html', 
@@ -222,7 +531,7 @@ def nuevo_producto():
                                          precio_compra, precio_venta, categoria, subcategoria, 
                                          ubicacion, proveedor, stock_minimo, unidad_medida)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ''', (codigo, nombre, descripcion, marca, cantidad, precio_compra, 
+                ''', (codigo if codigo else None, nombre, descripcion, marca, cantidad, precio_compra, 
                      precio_venta, categoria, subcategoria, ubicacion, proveedor, 
                      stock_minimo, unidad_medida))
                 conn.commit()
@@ -275,6 +584,11 @@ def editar_producto(product_id):
                 return render_template('ferreteria_form.html', product=product, 
                                      categories=get_categories(), brands=get_brands())
             
+            if codigo and product_exists_by_code(codigo, product_id):
+                flash('Ya existe otro producto con ese código', 'error')
+                return render_template('ferreteria_form.html', product=product, 
+                                     categories=get_categories(), brands=get_brands())
+            
             if precio_venta <= precio_compra:
                 flash('El precio de venta debe ser mayor al precio de compra', 'warning')
             
@@ -287,7 +601,7 @@ def editar_producto(product_id):
                         ubicacion=?, proveedor=?, stock_minimo=?, unidad_medida=?,
                         fecha_actualizacion=CURRENT_TIMESTAMP
                     WHERE id=?
-                ''', (codigo, nombre, descripcion, marca, cantidad, precio_compra, 
+                ''', (codigo if codigo else None, nombre, descripcion, marca, cantidad, precio_compra, 
                      precio_venta, categoria, subcategoria, ubicacion, proveedor, 
                      stock_minimo, unidad_medida, product_id))
                 conn.commit()
@@ -404,9 +718,11 @@ if __name__ == '__main__':
     # Crear directorio para la base de datos si no existe
     os.makedirs(os.path.dirname(os.path.abspath(DATABASE)) if os.path.dirname(DATABASE) else '.', exist_ok=True)
     
+    # Crear directorio de datos si no existe
+    os.makedirs(DATOS_FOLDER, exist_ok=True)
+    
     # Inicializar base de datos
     init_db()
     
     # Ejecutar aplicación
     app.run(debug=True, host='0.0.0.0', port=5000)
-    
