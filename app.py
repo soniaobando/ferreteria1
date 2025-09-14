@@ -726,3 +726,24 @@ if __name__ == '__main__':
     
     # Ejecutar aplicación
     app.run(debug=True, host='0.0.0.0', port=5000)
+    from flask import Flask
+from Conexion.conexion import get_db_connection
+
+app = Flask(__name__)
+
+# Ruta de prueba de conexión a la base de datos
+@app.route("/test_db")
+def test_db():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT DATABASE();")
+        db_name = cursor.fetchone()
+        cursor.close()
+        conn.close()
+        return f"✅ Conexión exitosa a la base de datos: {db_name[0]}"
+    except Exception as e:
+        return f"❌ Error al conectar: {str(e)}"
+
+if __name__ == "__main__":
+    app.run(debug=True)
